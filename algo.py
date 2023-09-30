@@ -1,28 +1,38 @@
-# You can modify this file to implement your own algorithm
-
+from collections import deque
 from constants import *
 
-"""
-You can use the following values from constants.py to check for the type of cell in the grid:
-I = 1 -> Wall 
-o = 2 -> Pellet (Small Dot)
-e = 3 -> Empty
-"""
+
+
+def is_valid(x, y, grid):
+
+    return 0 <= x < len(grid) and 0 <= y < len(grid[0]) and grid[x][y] != I
 
 def get_next_coordinate(grid, location):
 
-    """
-    Calculate the next coordinate for 6ix-pac to move to.
-    Check if the next coordinate is a valid move.
 
-    Parameters:
-    - grid (list of lists): A 2D array representing the game board.
-    - location (list): The current location of the 6ix-pac in the form (x, y).
-
-    Returns:
-    - list or tuple: 
-        - If the next coordinate is valid, return the next coordinate in the form (x, y) or [x,y].
-        - If the next coordinate is invalid, return None.
-    """
+    # Define possible moves (up, down, left, right)
+    directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
     
+    # Initialize BFS structures
+    visited = [[False for _ in range(len(grid[0]))] for _ in range(len(grid))]
+    queue = deque([(location, [])])  # Each element in the queue is a tuple of (location, path taken to that location)
+    visited[location[0]][location[1]] = True
+    
+    while queue:
+        (x, y), path = queue.popleft()
+        
+        # Check if current location is a pellet. If so, return the first move from the path.
+        if grid[x][y] == o:
+            if path:
+                return path[0]  # Return the first move to get to the pellet
+            return location  # If we're already on a pellet, return current location
+        
+        # Explore neighboring cells
+        for dx, dy in directions:
+            new_x, new_y = x + dx, y + dy
+            if is_valid(new_x, new_y, grid) and not visited[new_x][new_y]:
+                queue.append(((new_x, new_y), path + [(new_x, new_y)]))
+                visited[new_x][new_y] = True
+    
+    # If there's no reachable pellet, return current location
     return location
